@@ -1,0 +1,15 @@
+{
+  "name": "typescript-testing-ground",
+  "version": "1.0.0",
+  "description": "Testing out TS and learning from FEM course with Mike North",
+  "main": "index.ts",
+  "scripts": {
+    "dev": "tsc --watch --exactOptionalPropertyTypes",
+    "dev-mn": "tsc --watch --preserveWatchOutput"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^4.5.5"
+  }
+}
