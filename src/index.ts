@@ -276,3 +276,165 @@ function returnNothing(callback: () => void): void {
 }
 
 // Construct signatures
+// - What should happen with "new"
+// - Does not happen often
+interface DateConstructor {
+  new (val?: number): Date;
+}
+let MyDateConstructor: DateConstructor = Date;
+const d = new MyDateConstructor();
+
+// Function Overloads
+// - Feels a bit over-engineered to me...
+// See - https://www.typescript-training.com/course/fundamentals-v3/09-functions/
+// Here's another example... seems like people just want to get really picky on their types
+// https://betterprogramming.pub/mastering-function-overloading-in-typescript-97108369570a
+function foo(arg1: number, arg2: number): number;
+function foo(arg1: string, arg2: string): string;
+function foo(arg1: string | number, arg2: string | number) {
+  return arg1 || arg2;
+}
+
+// ❎ x is of type string
+const x = foo("sample1", "sample2");
+// ❎ y is of type number
+const y = foo(10, 24);
+
+// ❌ Error: No overload matches this call
+// @ts-expect-error
+const a = foo(10, "sample3");
+// ❌ Error: No overload matches this call
+// @ts-expect-error
+const b = foo("sample3", 10);
+
+// This Types
+// My implementation
+const myButton = document.getElementsByTagName("button")[0];
+function myClickHandler(this: HTMLButtonElement, event: Event): void {
+  this.disabled = true;
+}
+myButton.addEventListener("click", myClickHandler);
+
+// Mike's implementation
+// Mike also brings up bind, call and apply... I haven't seen those in modern scripting except for bind... in which I see an arrow function more often to attach this
+function mikesClickHandler(this: HTMLButtonElement, event: Event) {
+  this.disabled = true;
+}
+mikesClickHandler;
+mikesClickHandler.bind(myButton);
+mikesClickHandler.call(myButton, new Event("click")); // also ok
+
+// Classes
+// public: seen
+// private: not accessible by anything but self
+// protected: self + subclasses
+// Condensed version:
+class Car {
+  // Defined not in constructor
+  public readonly yes = 5; // some other prop... cannot reassign ie like const
+  private private = 5; // some other prop
+  protected forSelfAndChildren = 5; // some other prop
+  public name: string;
+  #anotherPrivate = "hey";
+  // So we don't need to define above first before setting this is the shorthand
+  constructor(
+    public make: string,
+    public model: string,
+    public year: number,
+    moreInfo: string // just used inside constructor... maybe private?
+  ) {
+    this.name = `${make} ${model} ${year}`;
+  }
+}
+
+const myCar2 = new Car("Honda", "Accord", 2017, "moreinfo");
+myCar2.make;
+myCar2.yes;
+myCar2.name;
+
+// Top Types
+// `any` or `unknown`
+// What's the diff...?
+// - `unknown` asks for type guards
+let myUnknown: unknown = 14;
+// @ts-expect-error
+myUnknown.it.is.possible.to.access.any.deep.property;
+if (typeof myUnknown === "string") myUnknown.split("");
+
+// Bottom Types
+// Hold no possible value
+// Exhaustive conditionals
+// - Basically great for if/else or switch and come to a place it should be anything else... basically what I've done for some "default: " cases
+class VehicleCar {
+  drive() {
+    console.log("vroom");
+  }
+}
+class VehicleTruck {
+  tow() {
+    console.log("dragging something");
+  }
+}
+class VehicleBoat {
+  isFloating() {
+    return true;
+  }
+}
+type Vehicle = VehicleTruck | VehicleCar | VehicleBoat;
+
+let myVehicle: Vehicle = Math.random() ? new VehicleBoat() : new VehicleCar();
+
+// The exhaustive conditional
+if (myVehicle instanceof VehicleTruck) {
+  myVehicle.tow(); // Truck
+} else if (myVehicle instanceof VehicleCar) {
+  myVehicle.drive(); // Car
+} else {
+  // NEITHER!
+  // @ts-expect-error
+  const neverValue: never = myVehicle;
+  if (neverValue) console.error("oops check your myVehicle instance type");
+}
+
+// Type guards and narrowing
+// All the types you know and love...
+// - instanceof, typeof, value check ===, true/false !, Array.isArray, check property
+
+// User defined type guards
+/* 
+  - Write a function that check all props and does all the testing you want...
+  - Then tell TS that it IS that type (TS must trust you)
+  - Or you can use the stronger asserts + error throwing
+*/
+interface CarLike {
+  make: string;
+  model: string;
+  year: number;
+}
+
+let maybeCar: unknown;
+
+function isCarLike(valueToTest: any): valueToTest is CarLike {
+  return (
+    valueToTest &&
+    typeof valueToTest === "object" &&
+    "make" in valueToTest &&
+    typeof valueToTest["make"] === "string" &&
+    "model" in valueToTest &&
+    typeof valueToTest["model"] === "string" &&
+    "year" in valueToTest &&
+    typeof valueToTest["year"] === "number"
+  );
+}
+
+// using the guard
+if (isCarLike(maybeCar)) {
+  maybeCar;
+}
+
+// Non-null assertion operator
+// `!.` - Mike likes for test suites not in prod code... so I'm just going to know it exists
+
+// Definite assignment operator
+// `!:` - also unlikely that I will use
+// - probably best before something is initialized
