@@ -262,3 +262,17 @@ isJSON(new BigInt(143));
 isJSON(isJSON);
 
 // Functions
+interface TwoNumberCalcInterface {
+  (a: number, b: number): number;
+}
+type TwoNumberCalcType = (a: number, b: number) => number;
+const add: TwoNumberCalcInterface = (a, b) => a + b;
+const subtract: TwoNumberCalcType = (a, b) => a - b;
+
+// void -> ignored doesn't mean it doesn't return ANYTHING but don't use it
+// can return undefined... but use judicially ie values.push()... returns something... so does pop etc
+function returnNothing(callback: () => void): void {
+  setTimeout(callback, 5000);
+}
+
+// Construct signatures
