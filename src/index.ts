@@ -438,3 +438,111 @@ if (isCarLike(maybeCar)) {
 // Definite assignment operator
 // `!:` - also unlikely that I will use
 // - probably best before something is initialized
+
+// Generics
+// - Motivation... transforming data from ie array with types to object with types
+const phoneList = [
+  { customerId: "0001", areaCode: "321", num: "123-4566" },
+  { customerId: "0002", areaCode: "174", num: "142-3626" },
+  { customerId: "0003", areaCode: "192", num: "012-7190" },
+  { customerId: "0005", areaCode: "402", num: "652-5782" },
+  { customerId: "0004", areaCode: "301", num: "184-8501" },
+];
+// into
+const phoneDict = {
+  "0001": {
+    customerId: "0001",
+    areaCode: "321",
+    num: "123-4566",
+  },
+  "0002": {
+    customerId: "0002",
+    areaCode: "174",
+    num: "142-3626",
+  },
+  /*... and so on */
+};
+// Defining a type parameter
+// “function arguments, but for types”
+function wrapInArray<T>(arg: T): [T] {
+  return [arg];
+}
+// What to use if mult types for naming... what's standard T, U, V?
+function bigOleKey<A, B, C>(a: A, b: B, c: C): [A, B, C] {
+  return [a, b, c];
+}
+
+function arrayToObject<T>(
+  list: T[],
+  idGen: (arg: T) => string
+): { [k: string]: T } {
+  const dict: { [k: string]: T } = {};
+  list.forEach((element) => {
+    const dictKey = idGen(element);
+    dict[dictKey] = element;
+  });
+  return dict;
+}
+
+///// SAMPLE DATA FOR YOUR EXPERIMENTATION PLEASURE (do not modify)
+const fruits = {
+  apple: { color: "red", mass: 100 },
+  grape: { color: "red", mass: 5 },
+  banana: { color: "yellow", mass: 183 },
+  lemon: { color: "yellow", mass: 80 },
+  pear: { color: "green", mass: 178 },
+  orange: { color: "orange", mass: 262 },
+  raspberry: { color: "red", mass: 4 },
+  cherry: { color: "red", mass: 5 },
+};
+
+interface Dict<T> {
+  [k: string]: T;
+}
+
+// Map, but for Dict
+function mapDict<T, S>(input: Dict<T>, mapFn: (v: T, k: string) => S): Dict<S> {
+  let res: Dict<S> = {};
+  Object.entries(input).map(([k, v]) => {
+    res[k] = mapFn(v, k);
+  });
+  return res;
+}
+// Filter, but for Dict
+function filterDict<T>(input: Dict<T>, filterFn: (v: T) => boolean): Dict<T> {
+  let res: Dict<T> = {};
+  Object.entries(input).map(([k, v]) => {
+    if (filterFn(v)) res[k] = v;
+  });
+  return res;
+}
+
+// Reduce, but for Dict
+function reduceDict<T, S>(
+  input: Dict<T>,
+  reduceFn: (a: S, c: T) => S,
+  start: S
+): S {
+  let accumulator = start;
+  Object.values(input).map((current) => {
+    accumulator = reduceFn(accumulator, current);
+  });
+  return accumulator;
+}
+
+// Generics Constants
+// Add more checking with `extends` on generics
+// interface HasId {
+//   id: string
+// }
+// interface Dict<T> {
+//   [k: string]: T
+// }
+// From...
+// function listToDict(list: HasId[]): Dict<HasId> {...
+// To...
+// function listToDict<T extends HasId>(list: T[]): Dict<T> {
+
+// Scopes and TypeParams
+// - Basically about thunks, closures, functions on classes
+// - You still have access to outer type params within these inner functions
